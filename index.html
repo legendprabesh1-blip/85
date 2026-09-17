@@ -1,0 +1,879 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Life OS | Exam Prep & Daily Dashboard</title>
+    <style>
+        :root {
+            --bg-color: #0b0f19;
+            --card-bg: rgba(17, 24, 39, 0.75);
+            --card-border: rgba(255, 255, 255, 0.08);
+            --accent-glow: #38bdf8;
+            --accent-gradient: linear-gradient(135deg, #38bdf8 0%, #6366f1 100%);
+            --text-main: #f3f4f6;
+            --text-muted: #9ca3af;
+            --input-bg: rgba(15, 23, 42, 0.6);
+            --transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        [data-theme="light"] {
+            --bg-color: #f1f5f9;
+            --card-bg: rgba(255, 255, 255, 0.85);
+            --card-border: rgba(0, 0, 0, 0.08);
+            --accent-glow: #0284c7;
+            --accent-gradient: linear-gradient(135deg, #0284c7 0%, #4f46e5 100%);
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --input-bg: #f8fafc;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 1.5rem;
+            overflow-x: hidden;
+            background-image: radial-gradient(circle at 10% 20%, rgba(56, 189, 248, 0.05) 0%, transparent 40%),
+                              radial-gradient(circle at 90% 80%, rgba(99, 102, 241, 0.05) 0%, transparent 40%);
+        }
+
+        /* Animations */
+        @keyframes floatIn {
+            0% { opacity: 0; transform: translateY(25px) scale(0.98); }
+            100% { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        @keyframes pulseGlow {
+            0%, 100% { box-shadow: 0 0 15px rgba(56, 189, 248, 0.2); }
+            50% { box-shadow: 0 0 25px rgba(56, 189, 248, 0.4); }
+        }
+
+        /* Login Screen */
+        #loginScreen {
+            background: var(--card-bg);
+            backdrop-filter: blur(16px);
+            border: 1px solid var(--card-border);
+            padding: 2.5rem;
+            border-radius: 24px;
+            width: 100%;
+            max-width: 420px;
+            text-align: center;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.3);
+            animation: floatIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        #loginScreen h1 {
+            font-size: 1.8rem;
+            background: var(--accent-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+        }
+
+        #loginScreen p {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .avatar-picker {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 1.5rem;
+        }
+
+        .avatar-option {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 2px solid var(--card-border);
+            transition: var(--transition);
+            object-fit: cover;
+        }
+
+        .avatar-option.selected, .avatar-option:hover {
+            border-color: var(--accent-glow);
+            transform: scale(1.12);
+            box-shadow: 0 0 15px rgba(56, 189, 248, 0.4);
+        }
+
+        .input-field {
+            width: 100%;
+            background: var(--input-bg);
+            border: 1px solid var(--card-border);
+            padding: 0.85rem 1rem;
+            border-radius: 12px;
+            color: var(--text-main);
+            font-size: 1rem;
+            margin-bottom: 1rem;
+            outline: none;
+            transition: var(--transition);
+        }
+
+        .input-field:focus {
+            border-color: var(--accent-glow);
+            box-shadow: 0 0 15px rgba(56, 189, 248, 0.25);
+            transform: translateY(-1px);
+        }
+
+        /* Main Dashboard */
+        #dashboard {
+            display: none;
+            width: 100%;
+            max-width: 950px;
+            animation: floatIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        /* Top Bar Profile Header */
+        .user-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--card-bg);
+            backdrop-filter: blur(16px);
+            border: 1px solid var(--card-border);
+            padding: 1.25rem 1.5rem;
+            border-radius: 20px;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .user-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid var(--accent-glow);
+            animation: pulseGlow 3s infinite;
+        }
+
+        .user-details h2 {
+            font-size: 1.3rem;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .user-details span {
+            font-size: 0.85rem;
+            color: var(--accent-glow);
+            display: block;
+            margin-top: 2px;
+        }
+
+        .user-bio-text {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-top: 4px;
+            max-width: 320px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .header-controls {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .icon-btn {
+            background: var(--input-bg);
+            color: var(--text-main);
+            border: 1px solid var(--card-border);
+            padding: 0.55rem 0.9rem;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: var(--transition);
+        }
+
+        .icon-btn:hover {
+            border-color: var(--accent-glow);
+            transform: translateY(-2px);
+        }
+
+        .logout-btn {
+            color: #ef4444;
+            background: rgba(239, 68, 68, 0.08);
+            border-color: rgba(239, 68, 68, 0.2);
+        }
+
+        .logout-btn:hover {
+            background: rgba(239, 68, 68, 0.2);
+        }
+
+        /* Countdown Banner */
+        .countdown-banner {
+            background: linear-gradient(135deg, rgba(56, 189, 248, 0.1), rgba(99, 102, 241, 0.1));
+            border: 1px solid rgba(56, 189, 248, 0.3);
+            padding: 1rem;
+            border-radius: 14px;
+            text-align: center;
+            margin-bottom: 1.5rem;
+            font-weight: 600;
+            color: var(--accent-glow);
+            font-size: 0.95rem;
+            box-shadow: 0 4px 20px rgba(56, 189, 248, 0.08);
+        }
+
+        /* Navigation Tabs */
+        .tabs {
+            display: flex;
+            justify-content: center;
+            gap: 0.75rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .tab-btn {
+            background: var(--card-bg);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--card-border);
+            color: var(--text-muted);
+            padding: 0.7rem 1.25rem;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: var(--transition);
+        }
+
+        .tab-btn.active, .tab-btn:hover {
+            background: var(--accent-gradient);
+            color: #fff;
+            border-color: transparent;
+            box-shadow: 0 6px 20px rgba(56, 189, 248, 0.35);
+            transform: translateY(-2px);
+        }
+
+        /* Sections */
+        .section-content {
+            display: none;
+            background: var(--card-bg);
+            backdrop-filter: blur(16px);
+            border: 1px solid var(--card-border);
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.12);
+            animation: floatIn 0.4s ease forwards;
+        }
+
+        .section-content.active {
+            display: block;
+        }
+
+        /* Day Selector for Routine */
+        .day-selector {
+            display: flex;
+            gap: 0.5rem;
+            overflow-x: auto;
+            padding-bottom: 0.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .day-btn {
+            background: var(--input-bg);
+            border: 1px solid var(--card-border);
+            color: var(--text-muted);
+            padding: 0.55rem 1.1rem;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            white-space: nowrap;
+            transition: var(--transition);
+        }
+
+        .day-btn.active, .day-btn:hover {
+            background: var(--accent-glow);
+            color: var(--bg-color);
+            font-weight: bold;
+            border-color: transparent;
+            transform: translateY(-1px);
+        }
+
+        h3.section-title {
+            font-size: 1.3rem;
+            margin-bottom: 1.2rem;
+            color: var(--accent-glow);
+            border-bottom: 1px solid var(--card-border);
+            padding-bottom: 0.5rem;
+        }
+
+        /* Schedule / Routine Items */
+        .schedule-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--input-bg);
+            padding: 1rem;
+            border-radius: 12px;
+            margin-bottom: 0.8rem;
+            border-left: 4px solid var(--accent-glow);
+            border: 1px solid var(--card-border);
+            transition: var(--transition);
+        }
+
+        .schedule-item:hover {
+            transform: translateX(4px);
+            border-color: rgba(56, 189, 248, 0.3);
+        }
+
+        .schedule-time {
+            font-weight: bold;
+            color: var(--accent-glow);
+            min-width: 120px;
+            font-size: 0.9rem;
+        }
+
+        .schedule-desc {
+            flex-grow: 1;
+            margin-left: 1rem;
+            color: var(--text-main);
+            font-size: 0.9rem;
+        }
+
+        .schedule-desc span {
+            display: block;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-top: 0.2rem;
+        }
+
+        .holiday-banner {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            color: #10b981;
+            padding: 1rem;
+            border-radius: 12px;
+            text-align: center;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        /* To-Do / Checklist */
+        .todo-input-group {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .todo-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: var(--input-bg);
+            padding: 0.85rem 1rem;
+            border-radius: 10px;
+            margin-bottom: 0.6rem;
+            border: 1px solid var(--card-border);
+            animation: floatIn 0.3s ease;
+        }
+
+        .todo-item.completed span {
+            text-decoration: line-through;
+            color: var(--text-muted);
+        }
+
+        /* Primary Action Buttons */
+        .primary-btn {
+            background: var(--accent-gradient);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .primary-btn:hover {
+            opacity: 0.9;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(56, 189, 248, 0.35);
+        }
+
+        textarea {
+            width: 100%;
+            height: 100px;
+            background: var(--input-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            padding: 1rem;
+            color: var(--text-main);
+            font-size: 0.95rem;
+            resize: vertical;
+            margin-bottom: 1rem;
+            outline: none;
+            transition: var(--transition);
+        }
+
+        textarea:focus { border-color: var(--accent-glow); box-shadow: 0 0 15px rgba(56, 189, 248, 0.25); }
+
+        .journal-card {
+            background: var(--input-bg);
+            padding: 1rem;
+            border-radius: 10px;
+            margin-bottom: 0.75rem;
+            border: 1px solid var(--card-border);
+            animation: floatIn 0.3s ease;
+        }
+
+        .journal-date {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-bottom: 0.3rem;
+        }
+
+        /* Modal Overlay for Profile Editing */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(5px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .modal-overlay.open {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal-card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            padding: 2rem;
+            border-radius: 20px;
+            width: 100%;
+            max-width: 420px;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.3);
+            transform: scale(0.95);
+            transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .modal-overlay.open .modal-card {
+            transform: scale(1);
+        }
+
+        footer {
+            margin-top: 2rem;
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+    </style>
+</head>
+<body data-theme="dark">
+
+    <!-- 1. LOGIN SCREEN -->
+    <div id="loginScreen">
+        <h1>Welcome to Life OS</h1>
+        <p>Set up your profile to access your daily dashboard.</p>
+        
+        <div style="text-align: left; margin-bottom: 0.5rem; font-size: 0.85rem; color: var(--text-muted);">Choose your Avatar:</div>
+        <div class="avatar-picker" id="avatarPicker">
+            <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100" class="avatar-option selected" onclick="selectAvatar(this, 'login')">
+            <img src="https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?w=100" class="avatar-option" onclick="selectAvatar(this, 'login')">
+            <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100" class="avatar-option" onclick="selectAvatar(this, 'login')">
+            <img src="https://images.unsplash.com/photo-1527980965255-d3b416303d12?w=100" class="avatar-option" onclick="selectAvatar(this, 'login')">
+        </div>
+
+        <input type="text" id="usernameInput" class="input-field" placeholder="Enter your name..." autocomplete="off">
+        <input type="text" id="bioInput" class="input-field" placeholder="Short Bio (e.g. Student & Web Builder)" autocomplete="off" style="font-size: 0.9rem;">
+        <input type="text" id="customAvatarInput" class="input-field" placeholder="Or paste custom Image URL (optional)" autocomplete="off" style="font-size: 0.85rem;">
+        
+        <button class="primary-btn" style="width: 100%;" onclick="handleLogin()">Launch Dashboard</button>
+    </div>
+
+    <!-- 2. MAIN DASHBOARD -->
+    <div id="dashboard">
+        <!-- User Profile Header -->
+        <div class="user-header">
+            <div class="user-info">
+                <img id="displayAvatar" src="" alt="Profile Picture" class="user-avatar">
+                <div class="user-details">
+                    <h2 id="displayName"></h2>
+                    <span id="displayTarget">⚡ Target: >85% Exam Success</span>
+                    <div id="displayBio" class="user-bio-text"></div>
+                </div>
+            </div>
+            <div class="header-controls">
+                <button class="icon-btn" onclick="openEditProfile()" title="Edit Profile">✏️ Edit</button>
+                <button class="icon-btn" onclick="toggleTheme()" id="themeToggleBtn">☀️</button>
+                <button class="icon-btn logout-btn" onclick="handleLogout()" title="Switch Profile">🚪</button>
+            </div>
+        </div>
+
+        <div class="countdown-banner">
+            🎯 19-Day Countdown Active — High focus on college routine & daily mastery.
+        </div>
+
+        <!-- Navigation Tabs -->
+        <div class="tabs">
+            <button class="tab-btn active" onclick="switchTab('routineTab', this)">📅 Routine & Schedule</button>
+            <button class="tab-btn" onclick="switchTab('todoTab', this)">✅ Daily Tasks</button>
+            <button class="tab-btn" onclick="switchTab('strategyTab', this)">💡 >85% Strategy</button>
+            <button class="tab-btn" onclick="switchTab('journalTab', this)">📓 Daily Journal</button>
+        </div>
+
+        <!-- Tab 1: Routine -->
+        <div id="routineTab" class="section-content active">
+            <h3 class="section-title">Weekly Routine Planner</h3>
+            <div class="day-selector" id="daySelector">
+                <button class="day-btn active" onclick="selectDay('Monday', this)">Monday</button>
+                <button class="day-btn" onclick="selectDay('Tuesday', this)">Tuesday</button>
+                <button class="day-btn" onclick="selectDay('Wednesday', this)">Wednesday</button>
+                <button class="day-btn" onclick="selectDay('Thursday', this)">Thursday</button>
+                <button class="day-btn" onclick="selectDay('Friday', this)">Friday</button>
+                <button class="day-btn" onclick="selectDay('Saturday', this)">Saturday (Holiday)</button>
+                <button class="day-btn" onclick="selectDay('Sunday', this)">Sunday (Holiday)</button>
+            </div>
+            
+            <div id="scheduleContainer"></div>
+        </div>
+
+        <!-- Tab 2: To-Do List -->
+        <div id="todoTab" class="section-content">
+            <h3 class="section-title">Daily Action Checklist</h3>
+            <div class="todo-input-group">
+                <input type="text" id="todoInput" class="input-field" placeholder="Add a new task for today..." style="margin-bottom:0;">
+                <button class="primary-btn" onclick="addTodoTask()">Add</button>
+            </div>
+            <div id="todoListContainer" style="margin-top: 1rem;"></div>
+        </div>
+
+        <!-- Tab 3: Strategy -->
+        <div id="strategyTab" class="section-content">
+            <h3 class="section-title">Blueprint to Secure >85%</h3>
+            <div style="display: flex; flex-direction: column; gap: 1rem; color: var(--text-muted); line-height: 1.6;">
+                <div style="background: var(--input-bg); padding: 1rem; border-radius: 10px; border: 1px solid var(--card-border);">
+                    <strong style="color: var(--accent-glow);">1. College Hours (Mon-Fri 6:00 AM - 11:00 AM):</strong> Maximize active listening during classes so concepts are clear before afternoon self-study.
+                </div>
+                <div style="background: var(--input-bg); padding: 1rem; border-radius: 10px; border: 1px solid var(--card-border);">
+                    <strong style="color: var(--accent-glow);">2. Weekend Supercharged Sprints (Sat-Sun):</strong> Utilize college holidays for deep revision, full-length practice tests, and clearing backlog topics.
+                </div>
+                <div style="background: var(--input-bg); padding: 1rem; border-radius: 10px; border: 1px solid var(--card-border);">
+                    <strong style="color: var(--accent-glow);">3. Consistency & Sleep:</strong> Maintain 7.5 hours of uninterrupted rest every night to lock in your day's learning progress.
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab 4: Journal -->
+        <div id="journalTab" class="section-content">
+            <h3 class="section-title">Daily Progress Log & Thoughts</h3>
+            <textarea id="journalInput" placeholder="What did you achieve today? What needs focus tomorrow?"></textarea>
+            <button class="primary-btn" onclick="addJournalEntry()">Save Log</button>
+            <div id="journalContainer" style="margin-top: 1.5rem;"></div>
+        </div>
+
+        <footer>
+            <p>Life OS Dashboard • Built with Animation & Focus</p>
+        </footer>
+    </div>
+
+    <!-- EDIT PROFILE MODAL -->
+    <div class="modal-overlay" id="editModal">
+        <div class="modal-card">
+            <h3 style="color: var(--accent-glow); margin-bottom: 1rem;">Edit Profile</h3>
+            <div style="text-align: left; margin-bottom: 0.5rem; font-size: 0.85rem; color: var(--text-muted);">Choose Avatar:</div>
+            <div class="avatar-picker" id="editAvatarPicker">
+                <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100" class="avatar-option" onclick="selectAvatar(this, 'edit')">
+                <img src="https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?w=100" class="avatar-option" onclick="selectAvatar(this, 'edit')">
+                <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100" class="avatar-option" onclick="selectAvatar(this, 'edit')">
+                <img src="https://images.unsplash.com/photo-1527980965255-d3b416303d12?w=100" class="avatar-option" onclick="selectAvatar(this, 'edit')">
+            </div>
+            <input type="text" id="editNameInput" class="input-field" placeholder="Update name...">
+            <input type="text" id="editBioInput" class="input-field" placeholder="Update bio...">
+            <input type="text" id="editAvatarUrlInput" class="input-field" placeholder="Or custom Image URL..." style="font-size: 0.85rem;">
+            
+            <div style="display: flex; gap: 10px; margin-top: 1rem;">
+                <button class="primary-btn" style="flex: 1;" onclick="saveProfileChanges()">Save Changes</button>
+                <button class="icon-btn" style="flex: 1;" onclick="closeEditProfile()">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let selectedLoginAvatar = "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100";
+        let selectedEditAvatar = "";
+
+        const weekdaySchedule = [
+            { time: "05:00 AM - 05:30 AM", desc: "Wake Up & Hydrate", sub: "Stretch and prep for morning commute." },
+            { time: "06:00 AM - 11:00 AM", desc: "College Hours", sub: "Active learning, paying close attention in class." },
+            { time: "11:00 AM - 12:00 PM", desc: "Return Home & Lunch", sub: "Eat a nutritious meal and rest your eyes." },
+            { time: "12:00 PM - 02:30 PM", desc: "Study Block 1 (Deep Focus)", sub: "Tackle core theory or your most challenging subject." },
+            { time: "02:30 PM - 03:30 PM", desc: "Break & Physical Activity", sub: "Walk, listen to music, or grab a snack." },
+            { time: "03:30 PM - 06:00 PM", desc: "Study Block 2 (Problem Solving)", sub: "Practice numerical problems, code implementations, or exercises." },
+            { time: "06:00 PM - 07:30 PM", desc: "Dinner & Personal Time", sub: "Unwind, have dinner, and disconnect from screens." },
+            { time: "07:30 PM - 09:30 PM", desc: "Study Block 3 (Revision & Plan)", sub: "Review flashcards, summarize today's learnings, and plan tomorrow." },
+            { time: "09:30 PM - 05:00 AM", desc: "Rest & Sleep (7.5 Hours)", sub: "Critical for memory consolidation." }
+        ];
+
+        const holidaySchedule = [
+            { time: "07:00 AM - 08:00 AM", desc: "Relaxed Wake Up & Breakfast", sub: "Sleep in slightly, enjoy a calm morning." },
+            { time: "08:30 AM - 11:30 AM", desc: "Intensive Study Sprint 1", sub: "Deep dive into complex topics or past exam questions." },
+            { time: "11:30 AM - 01:00 PM", desc: "Lunch & Personal Hobby", sub: "Coding, personal projects, or creative writing." },
+            { time: "01:00 PM - 04:00 PM", desc: "Intensive Study Sprint 2", sub: "Mock tests, problem-solving, and revision blocks." },
+            { time: "04:00 PM - 06:00 PM", desc: "Outdoor Walk & Physical Break", sub: "Clear your head, hang out or refresh outdoors." },
+            { time: "06:00 PM - 08:00 PM", desc: "Dinner & Family Time", sub: "Unwind and disconnect." },
+            { time: "08:00 PM - 09:30 PM", desc: "Weekly Review & Prep", sub: "Organize notes for the upcoming week ahead." },
+            { time: "09:30 PM - 07:00 AM", desc: "Rest & Sleep", sub: "Recharge fully for the upcoming week." }
+        ];
+
+        function toggleTheme() {
+            const body = document.body;
+            const btn = document.getElementById('themeToggleBtn');
+            const currentTheme = body.getAttribute('data-theme');
+            
+            if(currentTheme === 'dark') {
+                body.setAttribute('data-theme', 'light');
+                btn.innerText = '🌙';
+                localStorage.setItem('life_os_theme', 'light');
+            } else {
+                body.setAttribute('data-theme', 'dark');
+                btn.innerText = '☀️';
+                localStorage.setItem('life_os_theme', 'dark');
+            }
+        }
+
+        function selectAvatar(imgElement, context) {
+            if(context === 'login') {
+                document.querySelectorAll('#avatarPicker .avatar-option').forEach(img => img.classList.remove('selected'));
+                imgElement.classList.add('selected');
+                selectedLoginAvatar = imgElement.src;
+            } else {
+                document.querySelectorAll('#editAvatarPicker .avatar-option').forEach(img => img.classList.remove('selected'));
+                imgElement.classList.add('selected');
+                selectedEditAvatar = imgElement.src;
+            }
+        }
+
+        function handleLogin() {
+            const name = document.getElementById('usernameInput').value.trim();
+            const bio = document.getElementById('bioInput').value.trim() || "Student & Lifelong Builder";
+            const customUrl = document.getElementById('customAvatarInput').value.trim();
+            
+            if(!name) {
+                alert('Please enter your name to continue!');
+                return;
+            }
+
+            const finalAvatar = customUrl ? customUrl : selectedLoginAvatar;
+            const userProfile = { name, bio, avatar: finalAvatar };
+            localStorage.setItem('life_os_user', JSON.stringify(userProfile));
+
+            initDashboard(userProfile);
+        }
+
+        function initDashboard(profile) {
+            document.getElementById('loginScreen').style.display = 'none';
+            document.getElementById('dashboard').style.display = 'block';
+            document.getElementById('displayName').innerText = profile.name;
+            document.getElementById('displayBio').innerText = profile.bio;
+            document.getElementById('displayAvatar').src = profile.avatar;
+
+            const savedTheme = localStorage.getItem('life_os_theme') || 'dark';
+            document.body.setAttribute('data-theme', savedTheme);
+            document.getElementById('themeToggleBtn').innerText = savedTheme === 'dark' ? '☀️' : '🌙';
+
+            loadSchedule('Monday');
+            loadTodoList();
+            loadJournalEntries();
+        }
+
+        function openEditProfile() {
+            const user = JSON.parse(localStorage.getItem('life_os_user'));
+            document.getElementById('editNameInput').value = user.name;
+            document.getElementById('editBioInput').value = user.bio;
+            document.getElementById('editAvatarUrlInput').value = user.avatar;
+            selectedEditAvatar = user.avatar;
+            document.getElementById('editModal').classList.add('open');
+        }
+
+        function closeEditProfile() {
+            document.getElementById('editModal').classList.remove('open');
+        }
+
+        function saveProfileChanges() {
+            const name = document.getElementById('editNameInput').value.trim();
+            const bio = document.getElementById('editBioInput').value.trim();
+            const customUrl = document.getElementById('editAvatarUrlInput').value.trim();
+
+            if(!name) {
+                alert('Name cannot be empty!');
+                return;
+            }
+
+            const finalAvatar = customUrl ? customUrl : selectedEditAvatar;
+            const updatedProfile = { name, bio, avatar: finalAvatar };
+            
+            localStorage.setItem('life_os_user', JSON.stringify(updatedProfile));
+            initDashboard(updatedProfile);
+            closeEditProfile();
+        }
+
+        function handleLogout() {
+            localStorage.removeItem('life_os_user');
+            document.getElementById('dashboard').style.display = 'none';
+            document.getElementById('loginScreen').style.display = 'block';
+        }
+
+        window.onload = function() {
+            const savedUser = JSON.parse(localStorage.getItem('life_os_user'));
+            if(savedUser) {
+                initDashboard(savedUser);
+            }
+        }
+
+        function switchTab(tabId, btnElement) {
+            document.querySelectorAll('.section-content').forEach(sec => sec.classList.remove('active'));
+            document.querySelectorAll('.tabs .tab-btn').forEach(btn => btn.classList.remove('active'));
+            
+            document.getElementById(tabId).classList.add('active');
+            btnElement.classList.add('active');
+        }
+
+        function selectDay(dayName, btnElement) {
+            document.querySelectorAll('.day-btn').forEach(b => b.classList.remove('active'));
+            btnElement.classList.add('active');
+            loadSchedule(dayName);
+        }
+
+        function loadSchedule(day) {
+            const container = document.getElementById('scheduleContainer');
+            const isHoliday = (day === 'Saturday' || day === 'Sunday');
+            
+            container.innerHTML = `
+                <h4 style="color:var(--text-muted); margin-bottom: 0.8rem; font-size:0.9rem;">Schedule for ${day}</h4>
+                ${isHoliday ? '<div class="holiday-banner">🌴 College Holiday — Supercharged Self-Study & Hobby Day!</div>' : ''}
+            `;
+            
+            const activeSchedule = isHoliday ? holidaySchedule : weekdaySchedule;
+
+            activeSchedule.forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'schedule-item';
+                div.innerHTML = `
+                    <span class="schedule-time">${item.time}</span>
+                    <span class="schedule-desc">${item.desc} <span>${item.sub}</span></span>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function loadTodoList() {
+            const container = document.getElementById('todoListContainer');
+            const tasks = JSON.parse(localStorage.getItem('life_os_todos')) || [
+                { text: "Attend morning college classes (Mon-Fri 6 - 11 AM)", completed: true },
+                { text: "Complete daily study blocks & revision goals", completed: false }
+            ];
+
+            container.innerHTML = '';
+            tasks.forEach((task, index) => {
+                const item = document.createElement('div');
+                item.className = `todo-item ${task.completed ? 'completed' : ''}`;
+                item.innerHTML = `
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <input type="checkbox" ${task.completed ? 'checked' : ''} onchange="toggleTask(${index})">
+                        <span>${task.text}</span>
+                    </div>
+                    <button onclick="deleteTask(${index})" style="background:none; border:none; color:#ef4444; cursor:pointer; font-size:0.8rem;">Delete</button>
+                `;
+                container.appendChild(item);
+            });
+        }
+
+        function addTodoTask() {
+            const input = document.getElementById('todoInput');
+            const text = input.value.trim();
+            if(!text) return;
+
+            const tasks = JSON.parse(localStorage.getItem('life_os_todos')) || [];
+            tasks.push({ text: text, completed: false });
+            localStorage.setItem('life_os_todos', JSON.stringify(tasks));
+            
+            input.value = '';
+            loadTodoList();
+        }
+
+        function toggleTask(index) {
+            const tasks = JSON.parse(localStorage.getItem('life_os_todos')) || [];
+            tasks.previousState = tasks[index].completed;
+            tasks[index].completed = !tasks[index].completed;
+            localStorage.setItem('life_os_todos', JSON.stringify(tasks));
+            loadTodoList();
+        }
+
+        function deleteTask(index) {
+            const tasks = JSON.parse(localStorage.getItem('life_os_todos')) || [];
+            tasks.splice(index, 1);
+            localStorage.setItem('life_os_todos', JSON.stringify(tasks));
+            loadTodoList();
+        }
+
+        function loadJournalEntries() {
+            const container = document.getElementById('journalContainer');
+            const entries = JSON.parse(localStorage.getItem('life_os_journal')) || [];
+            
+            container.innerHTML = '';
+            if(entries.length === 0) {
+                container.innerHTML = '<p style="color: var(--text-muted); font-size: 0.9rem; text-align: center;">No logs added yet.</p>';
+                return;
+            }
+
+            entries.forEach(entry => {
+                const card = document.createElement('div');
+                card.className = 'journal-card';
+                card.innerHTML = `
+                    <div class="journal-date">${entry.date}</div>
+                    <div>${entry.text}</div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function addJournalEntry() {
+            const input = document.getElementById('journalInput');
+            const text = input.value.trim();
+            if(!text) return;
+
+            const entries = JSON.parse(localStorage.getItem('life_os_journal')) || [];
+            const currentDate = new Date().toLocaleString('en-US', { 
+                month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' 
+            });
+
+            entries.unshift({ date: currentDate, text: text });
+            localStorage.setItem('life_os_journal', JSON.stringify(entries));
+            
+            input.value = '';
+            loadJournalEntries();
+        }
+    </script>
+</body>
+</html>
